@@ -10,6 +10,7 @@ import com.jfinal.core.JFinal;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.c3p0.C3p0Plugin;
 import com.jfinal.render.ViewType;
+import com.minws.sso.auth.AuthController;
 import com.minws.sso.blog.Blog;
 import com.minws.sso.blog.BlogController;
 import com.minws.sso.frame.util.ProsMap;
@@ -34,6 +35,7 @@ public class AppConfig extends JFinalConfig {
 	public void configRoute(Routes me) {
 		me.add("/", IndexController.class, "/index");	// 第三个参数为该Controller的视图存放路径
 		me.add("/blog", BlogController.class);			// 第三个参数省略时默认与第一个参数值相同，在此即为 "/blog"
+		me.add("/auth", AuthController.class, "/auth");
 	}
 	
 	/**
@@ -48,6 +50,7 @@ public class AppConfig extends JFinalConfig {
 		ActiveRecordPlugin arp = new ActiveRecordPlugin(c3p0Plugin);
 		me.add(arp);
 		arp.addMapping("blog", Blog.class);	// 映射blog 表到 Blog模型
+		
 	}
 	
 	/**
