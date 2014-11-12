@@ -8,11 +8,12 @@ public class QQUserInfo implements Serializable {
 	/**
 	 * 返回码
 	 */
-	private String ret;
+	private Integer ret;
 	/**
 	 * 如果ret<0，会有相应的错误信息提示，返回数据全部用UTF-8编码。
 	 */
 	private String msg;
+	private Integer is_lost;
 	/**
 	 * 用户在QQ空间的昵称。
 	 */
@@ -62,12 +63,20 @@ public class QQUserInfo implements Serializable {
 	 */
 	private String is_yellow_year_vip;
 
-	public String getRet() {
+	public Integer getRet() {
 		return ret;
 	}
 
 	public String getMsg() {
 		return msg;
+	}
+
+	public Integer getIs_lost() {
+		return is_lost;
+	}
+
+	public void setIs_lost(Integer is_lost) {
+		this.is_lost = is_lost;
 	}
 
 	public String getNickname() {
@@ -118,7 +127,7 @@ public class QQUserInfo implements Serializable {
 		return is_yellow_year_vip;
 	}
 
-	public void setRet(String ret) {
+	public void setRet(Integer ret) {
 		this.ret = ret;
 	}
 

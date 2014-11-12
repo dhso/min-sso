@@ -12,6 +12,8 @@ import java.util.Map;
 
 import org.apache.http.client.ClientProtocolException;
 
+import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jfinal.aop.Before;
@@ -69,11 +71,14 @@ public class AuthController extends Controller {
 		if (StringUtils.isNotBlank(openId) && StringUtils.isNotBlank(clientId)) {
 			String userInfoUrl = "https://graph.qq.com/user/get_user_info?access_token=" + accessToken + "&oauth_consumer_key=" + clientId + "&openid=" + openId;
 			String userInfoRes = AceUtils.httpGet(userInfoUrl);
-			userInfo = new ObjectMapper().convertValue(userInfoRes, QQUserInfo.class);
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+			mapper.configure(Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
+			userInfo = mapper.convertValue(userInfoRes, QQUserInfo.class);
 		}
 
 		setCookie("sso_access_token", accessToken, expiresIn, "/", ProsMap.getStrPro("sso.cookie.domain"));
-		if (null != userInfo && "0".equals(userInfo.getRet())) {
+		if (null != userInfo && userInfo.getRet() == 0) {
 			setCookie("sso_nickName", userInfo.getNickname(), expiresIn, "/", ProsMap.getStrPro("sso.cookie.domain"));
 		}
 		render("qqInfo.jsp");
