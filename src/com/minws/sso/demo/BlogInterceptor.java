@@ -1,4 +1,4 @@
-package com.minws.sso.blog;
+package com.minws.sso.demo;
 
 import com.jfinal.aop.Interceptor;
 import com.jfinal.core.ActionInvocation;

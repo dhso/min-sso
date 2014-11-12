@@ -1,4 +1,4 @@
-package com.minws.sso.blog;
+package com.minws.sso.demo;
 
 import java.util.List;
 import com.jfinal.plugin.activerecord.Model;

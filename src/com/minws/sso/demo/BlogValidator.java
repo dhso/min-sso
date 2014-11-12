@@ -1,4 +1,4 @@
-package com.minws.sso.blog;
+package com.minws.sso.demo;
 
 import com.jfinal.core.Controller;
 import com.jfinal.validate.Validator;

@@ -11,10 +11,7 @@ import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.c3p0.C3p0Plugin;
 import com.jfinal.render.ViewType;
 import com.minws.sso.auth.AuthController;
-import com.minws.sso.blog.Blog;
-import com.minws.sso.blog.BlogController;
 import com.minws.sso.frame.util.ProsMap;
-import com.minws.sso.index.IndexController;
 
 /**
  * API引导式配置
@@ -33,8 +30,6 @@ public class AppConfig extends JFinalConfig {
 	 * 配置路由
 	 */
 	public void configRoute(Routes me) {
-		me.add("/", IndexController.class, "/index");	// 第三个参数为该Controller的视图存放路径
-		me.add("/blog", BlogController.class);			// 第三个参数省略时默认与第一个参数值相同，在此即为 "/blog"
 		me.add("/auth", AuthController.class, "/auth");
 	}
 	
@@ -43,13 +38,12 @@ public class AppConfig extends JFinalConfig {
 	 */
 	public void configPlugin(Plugins me) {
 		// 配置C3p0数据库连接池插件
-		C3p0Plugin c3p0Plugin = new C3p0Plugin(ProsMap.getStrPro("sso.jdbcUrl"), ProsMap.getStrPro("sso.user"), ProsMap.getStrPro("sso.password").trim());
-		me.add(c3p0Plugin);
+		//C3p0Plugin c3p0Plugin = new C3p0Plugin(ProsMap.getStrPro("sso.jdbcUrl"), ProsMap.getStrPro("sso.user"), ProsMap.getStrPro("sso.password").trim());
+		//me.add(c3p0Plugin);
 		
 		// 配置ActiveRecord插件
-		ActiveRecordPlugin arp = new ActiveRecordPlugin(c3p0Plugin);
-		me.add(arp);
-		arp.addMapping("blog", Blog.class);	// 映射blog 表到 Blog模型
+		//ActiveRecordPlugin arp = new ActiveRecordPlugin(c3p0Plugin);
+		//me.add(arp);
 		
 	}
 	
@@ -72,6 +66,6 @@ public class AppConfig extends JFinalConfig {
 	 * 运行此 main 方法可以启动项目，此main方法可以放置在任意的Class类定义中，不一定要放于此
 	 */
 	public static void main(String[] args) {
-		JFinal.start("WebRoot", 80, "/", 5);
+		JFinal.start("webapp", 80, "/", 5);
 	}
 }
