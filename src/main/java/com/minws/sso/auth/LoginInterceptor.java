@@ -12,7 +12,6 @@ import com.jfinal.core.Controller;
 public class LoginInterceptor implements Interceptor {
 
 	public void intercept(ActionInvocation ai) {
-		System.out.println("Before invoking " + ai.getActionKey());
 		Controller controller = ai.getController();
 		String sso_token = controller.getCookie("sso_access_token", "");
 		HttpServletRequest request = controller.getRequest();
@@ -24,7 +23,5 @@ public class LoginInterceptor implements Interceptor {
 		} else {
 			ai.invoke();
 		}
-
-		System.out.println("After invoking " + ai.getActionKey());
 	}
 }

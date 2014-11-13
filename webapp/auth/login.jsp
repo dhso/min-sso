@@ -2,20 +2,17 @@
 <%
 	String path = request.getContextPath();
 	String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path;
-	String queryString = request.getQueryString();
-	queryString = (null == queryString) ? "" : "?" + queryString;
+
 	String appId = ProsMap.getStrPro("sso.qqauth.appId");
 	String appKey = ProsMap.getStrPro("sso.qqauth.appKey");
 	String scope = ProsMap.getStrPro("sso.qqauth.scope");
-	String redirectUrl = ProsMap.getStrPro("sso.qqauth.redirectUrl");
-	Cookie[] cookies = request.getCookies();
-	String state = "";
-	for(Cookie cookie:cookies ){
-		if("sso_state".equals(cookie.getName()) ){
-			state = cookie.getValue();
-			break;
-		}
-	}
+
+	String state = (String) request.getAttribute("sso_state");
+	
+	String sso_qstr = (String) request.getAttribute("sso_qstr");
+	String redirectUrl = ProsMap.getStrPro("sso.qqauth.redirectUrl") + sso_qstr;
+
+	
 %>
 <!DOCTYPE html>
 <!--[if lt IE 7 ]> <html lang="en" class="ie6 ielt8"> <![endif]-->

@@ -48,9 +48,9 @@ public class AceUtils {
 	 * @param value
 	 * @return
 	 */
-	public static boolean cachePut(String key, Serializable value) {
+	public static boolean cachePut(String key, Serializable value, Integer expire) {
 		CacheService cacheService = CacheServiceFactory.getCacheService();
-		return cacheService.put(key, value);
+		return cacheService.put(key, value, expire);
 	}
 
 	/**
