@@ -59,7 +59,7 @@ public class AceUtils {
 	 * @param key
 	 * @return
 	 */
-	public static Serializable cacheGut(String key) {
+	public static Serializable cacheGet(String key) {
 		CacheService cacheService = CacheServiceFactory.getCacheService();
 		return cacheService.get(key);
 	}

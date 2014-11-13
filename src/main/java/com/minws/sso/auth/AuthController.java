@@ -29,6 +29,10 @@ public class AuthController extends Controller {
 
 	@Before(LoginInterceptor.class)
 	public void index() {
+		String sso_access_token = getCookie("sso_access_token", "");
+		Serializable ser = AceUtils.cacheGet(sso_access_token);
+		QQUserInfo qquerInfo = (null != ser) ? (QQUserInfo) ser : null;
+		setAttr("qquerInfo", qquerInfo);
 		render("index.jsp");
 	}
 
@@ -88,6 +92,7 @@ public class AuthController extends Controller {
 					mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
 					mapper.configure(Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
 					userInfo = mapper.readValue(userInfoRes, QQUserInfo.class);
+					AceUtils.cachePut(accessTokenStr, userInfo, expiresInInt);
 				}
 			}
 
@@ -100,7 +105,7 @@ public class AuthController extends Controller {
 		String urlKey = getRequest().getQueryString().replaceAll("&code=" + qqCode, "").replaceAll("/?code=" + qqCode, "").replaceAll("&state=" + qqState, "").replaceAll("/?state=" + qqState, "");
 		String gotoUrl = "";
 		if (StringUtils.isNotBlank(urlKey)) {
-			Serializable urlValue = AceUtils.cacheGut(urlKey);
+			Serializable urlValue = AceUtils.cacheGet(urlKey);
 			gotoUrl = (null != urlValue) ? urlValue.toString().replace("goto=", "") : "";
 		}
 
