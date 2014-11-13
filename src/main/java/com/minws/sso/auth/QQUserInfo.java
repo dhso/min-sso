@@ -19,6 +19,22 @@ public class QQUserInfo implements Serializable {
 	 */
 	private String nickname;
 	/**
+	 * 性别。 如果获取不到则默认返回"男"
+	 */
+	private String gender;
+	/**
+	 * 省份
+	 */
+	private String province;
+	/**
+	 * 城市
+	 */
+	private String city;
+	/**
+	 * 年龄
+	 */
+	private String year;
+	/**
 	 * 大小为30×30像素的QQ空间头像URL。
 	 */
 	private String figureurl;
@@ -38,10 +54,6 @@ public class QQUserInfo implements Serializable {
 	 * 大小为100×100像素的QQ头像URL。需要注意，不是所有的用户都拥有QQ的100x100的头像，但40x40像素则是一定会有。
 	 */
 	private String figureurl_qq_2;
-	/**
-	 * 性别。 如果获取不到则默认返回"男"
-	 */
-	private String gender;
 	/**
 	 * 标识用户是否为黄钻用户（0：不是；1：是）。
 	 */
@@ -133,6 +145,30 @@ public class QQUserInfo implements Serializable {
 
 	public void setMsg(String msg) {
 		this.msg = msg;
+	}
+
+	public String getProvince() {
+		return province;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public String getYear() {
+		return year;
+	}
+
+	public void setProvince(String province) {
+		this.province = province;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public void setYear(String year) {
+		this.year = year;
 	}
 
 	public void setNickname(String nickname) {

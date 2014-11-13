@@ -74,7 +74,7 @@ public class AuthController extends Controller {
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
 			mapper.configure(Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
-			userInfo = mapper.convertValue(userInfoRes, QQUserInfo.class);
+			userInfo = mapper.readValue(userInfoRes, QQUserInfo.class);
 		}
 
 		setCookie("sso_access_token", accessToken, expiresIn, "/", ProsMap.getStrPro("sso.cookie.domain"));

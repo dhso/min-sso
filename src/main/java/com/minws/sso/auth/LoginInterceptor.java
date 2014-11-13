@@ -14,7 +14,7 @@ public class LoginInterceptor implements Interceptor {
 	public void intercept(ActionInvocation ai) {
 		System.out.println("Before invoking " + ai.getActionKey());
 		Controller controller = ai.getController();
-		String sso_token = controller.getCookie("sso_token", "");
+		String sso_token = controller.getCookie("sso_access_token", "");
 		HttpServletRequest request = controller.getRequest();
 		String url = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getRequestURI();
 		String para = request.getQueryString();
