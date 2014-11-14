@@ -1,4 +1,4 @@
-<%@ page language="java" import="java.util.*" import="com.minws.sso.frame.util.ProsMap" import="com.minws.sso.frame.util.Identities" contentType="text/html; charset=UTF-8" %>
+<%@ page language="java" import="java.util.*" import="com.minws.sso.frame.util.ProsMap" contentType="text/html; charset=UTF-8" %>
 <%
 	String path = request.getContextPath();
 	String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path;
@@ -10,8 +10,7 @@
 	String state = (String) request.getAttribute("sso_state");
 	
 	String sso_qstr = (String) request.getAttribute("sso_qstr");
-	String redirectUrl = ProsMap.getStrPro("sso.qqauth.redirectUrl") + sso_qstr;
-
+	String redirectUrl = ProsMap.getStrPro("sso.qqauth.redirectQQAuthUrl") + sso_qstr;
 	
 %>
 <!DOCTYPE html>

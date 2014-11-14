@@ -10,16 +10,17 @@ package com.minws.sso.auth;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URLEncoder;
-import java.util.Map;
+
+import javax.servlet.ServletException;
 
 import org.apache.http.client.ClientProtocolException;
 
-import com.fasterxml.jackson.core.JsonParser.Feature;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jfinal.aop.Before;
 import com.jfinal.core.Controller;
+import com.minws.sso.frame.sdk.QQConnect;
+import com.minws.sso.frame.sdk.QQMe;
+import com.minws.sso.frame.sdk.QQToken;
+import com.minws.sso.frame.sdk.QQUserInfo;
 import com.minws.sso.frame.util.AceUtils;
 import com.minws.sso.frame.util.Identities;
 import com.minws.sso.frame.util.ProsMap;
@@ -34,6 +35,7 @@ public class AuthController extends Controller {
 		QQUserInfo qquerInfo = (null != ser) ? (QQUserInfo) ser : null;
 		setAttr("qquerInfo", qquerInfo);
 		render("index.jsp");
+		return;
 	}
 
 	public void login() {
@@ -43,75 +45,65 @@ public class AuthController extends Controller {
 		setAttr("sso_state", key);
 		setAttr("sso_qstr", "?" + key);
 		setCookie("sso_state", key, 365 * 24 * 60 * 60, "/", ProsMap.getStrPro("sso.cookie.domain"));
+		// 缓存key->URL一天
 		AceUtils.cachePut(key, qstr, 60 * 60 * 24);
 		render("login.jsp");
+		return;
 	}
 
-	public void qqInfo() throws ClientProtocolException, IOException {
-		String qqCode = getPara("code", "");
-		String qqState = getPara("state", "");
+	public void qqAuth() throws ClientProtocolException, IOException, ServletException {
+		String state = getPara("state", "");
 		String cookieState = getCookie("sso_state", "");
 		// CSRF攻击检测
-		if (!cookieState.equals(qqState)) {
+		if (!cookieState.equals(state)) {
 			renderText("state不合法，可能受到CSRF攻击！");
 			return;
 		}
 
-		String qqAppId = ProsMap.getStrPro("sso.qqauth.appId");
-		String qqAppKey = ProsMap.getStrPro("sso.qqauth.appKey");
-		String qqRedirectUrl = ProsMap.getStrPro("sso.qqauth.redirectUrl") + "?" + qqState;
-		String accessTokenUrl = "https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&client_id=" + qqAppId + "&client_secret=" + qqAppKey + "&code=" + qqCode + "&redirect_uri=" + qqRedirectUrl;
-		String AccessTokenRes = AceUtils.httpGet(accessTokenUrl);
-		if (StringUtils.isNotBlank(AccessTokenRes)) {
-			Map<String, Object> mapres = StringUtils.getUrlParams(AccessTokenRes);
-			Object accessTokenObj = mapres.get("access_token");
-			String accessTokenStr = (null != accessTokenObj) ? accessTokenObj.toString() : "";
-			Object expiresInObj = mapres.get("expires_in");
-			Integer expiresInInt = (null != expiresInObj) ? StringUtils.toInteger(expiresInObj.toString()) : -1;
-
-			String openId = "";
-			String clientId = "";
-			if (StringUtils.isNotBlank(accessTokenStr)) {
-				String openIdUrl = "https://graph.qq.com/oauth2.0/me?access_token=" + accessTokenStr;
-				String openIdRes = AceUtils.httpGet(openIdUrl);
-				if (StringUtils.isNotBlank(openIdRes)) {
-					openIdRes = StringUtils.replace(openIdRes, "callback(", "");
-					openIdRes = StringUtils.replace(openIdRes, ");", "");
-					JsonNode rootNode = new ObjectMapper().readTree(openIdRes);
-					clientId = rootNode.path("client_id").asText();
-					openId = rootNode.path("openid").asText();
+		String appId = ProsMap.getStrPro("sso.qqauth.appId");
+		String appKey = ProsMap.getStrPro("sso.qqauth.appKey");
+		String code = getPara("code", "");
+		String redirectUrl = ProsMap.getStrPro("sso.qqauth.redirectQQInfoUrl") + "?" + state;
+		String qqUserInfoStr = "";
+		if (StringUtils.isNotBlank(appId) && StringUtils.isNotBlank(appKey) && StringUtils.isNotBlank(code) && StringUtils.isNotBlank(redirectUrl)) {
+			// 获取accessToken、expiresIn
+			QQToken qqToken = QQConnect.getToken(appId, appKey, code, redirectUrl);
+			String accessToken = qqToken.getAccessToken();
+			Integer expiresIn = qqToken.getExpiresIn();
+			if (StringUtils.isNotBlank(accessToken)) {
+				setCookie("sso_access_token", accessToken, expiresIn, "/", ProsMap.getStrPro("sso.cookie.domain"));
+				// 获取openId、clientId
+				QQMe qqMe = QQConnect.getMe(accessToken);
+				String openId = qqMe.getOpenId();
+				String clientId = qqMe.getClientId();
+				if (StringUtils.isNotBlank(openId) && StringUtils.isNotBlank(clientId)) {
+					// 获取QQUserInfoStr
+					qqUserInfoStr = QQConnect.getUserInfoStr(accessToken, clientId, openId);
+					QQUserInfo qqUserInfo = QQConnect.convertUserInfoStr2UserInfo(qqUserInfoStr);
+					if (null != qqUserInfo && qqUserInfo.getRet() == 0) {
+						// 缓存用户信息
+						AceUtils.cachePut(accessToken, qqUserInfoStr, expiresIn);
+						setCookie("sso_nickName", URLEncoder.encode(qqUserInfo.getNickname(), "utf-8"), expiresIn, "/", ProsMap.getStrPro("sso.cookie.domain"));
+					}
 				}
-			}
-
-			QQUserInfo userInfo = null;
-			if (StringUtils.isNotBlank(openId) && StringUtils.isNotBlank(clientId)) {
-				String userInfoUrl = "https://graph.qq.com/user/get_user_info?access_token=" + accessTokenStr + "&oauth_consumer_key=" + clientId + "&openid=" + openId;
-				String userInfoRes = AceUtils.httpGet(userInfoUrl);
-				if (StringUtils.isNotBlank(userInfoRes)) {
-					ObjectMapper mapper = new ObjectMapper();
-					mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
-					mapper.configure(Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
-					userInfo = mapper.readValue(userInfoRes, QQUserInfo.class);
-					AceUtils.cachePut(accessTokenStr, userInfo, expiresInInt);
-				}
-			}
-
-			setCookie("sso_access_token", accessTokenStr, expiresInInt, "/", ProsMap.getStrPro("sso.cookie.domain"));
-			if (null != userInfo && userInfo.getRet() == 0) {
-				setCookie("sso_nickName", URLEncoder.encode(userInfo.getNickname(), "utf-8"), expiresInInt, "/", ProsMap.getStrPro("sso.cookie.domain"));
 			}
 		}
+		
+		setAttr("qqUserInfoStr", qqUserInfoStr);
 
-		String urlKey = getRequest().getQueryString().replaceAll("&code=" + qqCode, "").replaceAll("/?code=" + qqCode, "").replaceAll("&state=" + qqState, "").replaceAll("/?state=" + qqState, "");
-		String gotoUrl = "";
+		String urlKey = getRequest().getQueryString().replaceAll("&code=" + code, "").replaceAll("/?code=" + code, "").replaceAll("&state=" + state, "").replaceAll("/?state=" + state, "");
 		if (StringUtils.isNotBlank(urlKey)) {
 			Serializable urlValue = AceUtils.cacheGet(urlKey);
-			gotoUrl = (null != urlValue) ? urlValue.toString().replace("goto=", "") : "";
+			String gotoUrl = (null != urlValue) ? urlValue.toString().replace("goto=", "") : "";
+			if (StringUtils.isNotBlank(gotoUrl)) {
+				setAttr("gotoUrl", gotoUrl);
+				render("goto.jsp");
+				return;
+			}
 		}
 
-		if (StringUtils.isNotBlank(gotoUrl)) {
-			redirect(gotoUrl);
-		}
-
+		render("qqInfo.jsp");
+		return;
 	}
+
 }

@@ -1,4 +1,4 @@
-package com.minws.sso.auth;
+package com.minws.sso.frame.sdk;
 
 import java.io.Serializable;
 
@@ -74,6 +74,10 @@ public class QQUserInfo implements Serializable {
 	 * 标识是否为年费黄钻用户（0：不是； 1：是）
 	 */
 	private String is_yellow_year_vip;
+
+	public QQUserInfo() {
+
+	}
 
 	public Integer getRet() {
 		return ret;
