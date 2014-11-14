@@ -3,7 +3,7 @@
 	String path = request.getContextPath();
 	String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path;
 	String gotoUrl = (String) request.getAttribute("gotoUrl");
-	String qqUserInfoStr = URLEncoder.encode(request.getAttribute("qqUserInfoStr").toString(), "UTF-8");
+	String qqUserInfoStr = URLEncoder.encode(request.getAttribute("qqUserInfoStr").toString(), "UTF-8").replaceAll("\\+", "%20");
 %>
 <!DOCTYPE html>
 <!--[if lt IE 7 ]> <html lang="en" class="ie6 ielt8"> <![endif]-->
@@ -14,7 +14,7 @@
 <head>
     <meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<title>goto</title>
+	<title></title>
 	<script src="<%=basePath%>/static/js/jquery/jquery.2.0.1.min.js"></script>
 </head>
 <body>
